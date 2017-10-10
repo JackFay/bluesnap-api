@@ -34,7 +34,7 @@ export default ({ config, db }) => {
 
 		  bsRes.on("end", function () {
 		    var body = Buffer.concat(chunks);
-		    res.send(body.toString());
+		    res.send({status: bsRes.statusCode, message: bsRes.statusMessage});
 		  });
 		});
 
