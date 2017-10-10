@@ -42,5 +42,9 @@ export default ({ config, db }) => {
 		bsReq.end();
 	});
 
+	api.get('/test', (req, res) => {
+		res.send("testing...");
+	})
+
 	return api;
 }
