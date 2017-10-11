@@ -2,6 +2,7 @@ import { version } from '../../package.json';
 import { Router } from 'express';
 import facets from './facets';
 import axios from "axios";
+import http from "https";
 
 export default ({ config, db }) => {
 	let api = Router();
@@ -10,8 +11,6 @@ export default ({ config, db }) => {
 	api.use('/facets', facets({ config, db }));
 
 	api.post('/', (req, res) => {
-		var http = require("https");
-
 		var options = {
 		  "method": "POST",
 		  "hostname": "sandbox.bluesnap.com",
@@ -39,6 +38,38 @@ export default ({ config, db }) => {
 		});
 
 		bsReq.write(req.body.xml);
+		bsReq.end();
+	});
+
+	api.post('/findBatch', (req, res) => {
+		const batchId = req.body.batchId;
+		const apiKey = req.body.apiKey;
+		var options = {
+		  "method": "GET",
+		  "hostname": "sandbox.bluesnap.com",
+		  "port": null,
+		  "path": "/services/2/batch-transactions/" + batchId,
+		  "headers": {
+		    "content-type": "application/xml",
+		    "authorization": "Basic " + apiKey,
+		    "cache-control": "no-cache",
+		    "postman-token": "d4b52c61-bc50-c8cc-0d02-ded9de999104"
+		  }
+		};
+
+		var bsReq = http.request(options, function (bsRes) {
+		  var chunks = [];
+
+		  bsRes.on("data", function (chunk) {
+		    chunks.push(chunk);
+		  });
+
+		  bsRes.on("end", function () {
+		    var body = Buffer.concat(chunks);
+		    res.send(body.toString());
+		  });
+		});
+
 		bsReq.end();
 	});
 
