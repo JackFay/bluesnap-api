@@ -18,7 +18,7 @@ export default ({ config, db }) => {
 		  "path": "/services/2/batch-transactions",
 		  "headers": {
 		    "content-type": "application/xml",
-		    "authorization": req.body.api,
+		    "authorization": "Basic " + req.body.api,
 		    "cache-control": "no-cache",
 		    "postman-token": "d0f3b0aa-cff2-70ad-554f-11321617f822"
 		  }
@@ -33,7 +33,7 @@ export default ({ config, db }) => {
 
 		  bsRes.on("end", function () {
 		    var body = Buffer.concat(chunks);
-		    res.send({status: bsRes.statusCode, message: bsRes.statusMessage});
+		    res.send({status: bsRes.statusCode, message: bsRes.statusMessage, body: body.toString()});
 		  });
 		});
 
