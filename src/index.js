@@ -19,9 +19,8 @@ app.use(cors({
 	exposedHeaders: config.corsHeaders
 }));
 
-app.use(bodyParser.json({
-	limit : config.bodyLimit
-}));
+app.use(bodyParser.json({limit: "50mb"}));
+app.use(bodyParser.urlencoded({limit: "50mb", extended: true, parameterLimit:50000}));
 
 // connect to db
 initializeDb( db => {
