@@ -77,7 +77,7 @@ export default ({ config, db }) => {
 	api.post('/postBatchMetaData', (req, res) => {
 		const {batchId, csvPath, res_code, res_message, res_body} = req.body;
 		const datetime = moment().format('YYYY-MM-DD HH:mm:ss');
-		const insertBatchQuery = 'INSERT INTO csv_uploads VALUES (\'' + batchId + '\', ' + datetime + ', \'' + csvPath + '\', \'' + res_code + '\', \'' + res_message + '\', \'' + res_body + '\')';
+		const insertBatchQuery = 'INSERT INTO csv_uploads VALUES (\'' + batchId + '\', \'' + datetime + '\', \'' + csvPath + '\', \'' + res_code + '\', \'' + res_message + '\', \'' + res_body + '\')';
 
 		db.query(insertBatchQuery, (err, result) => {
 			if(err){
