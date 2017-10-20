@@ -11,6 +11,7 @@ export default ({ config, db }) => {
 	api.use('/facets', facets({ config, db }));
 
 	api.post('/', (req, res) => {
+		console.log(req.body);
 		var options = {
 		  "method": "POST",
 		  "hostname": "sandbox.bluesnap.com",
@@ -20,7 +21,7 @@ export default ({ config, db }) => {
 		    "content-type": "application/xml",
 		    "authorization": "Basic " + req.body.api,
 		    "cache-control": "no-cache",
-		    "postman-token": "d0f3b0aa-cff2-70ad-554f-11321617f822"
+		    "postman-token": "2847266b-dca6-9920-6942-0b43934b1306"
 		  }
 		};
 
