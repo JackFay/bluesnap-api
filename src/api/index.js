@@ -3,6 +3,7 @@ import { Router } from 'express';
 import facets from './facets';
 import axios from "axios";
 import http from "https";
+import moment from "moment";
 
 export default ({ config, db }) => {
 	let api = Router();
@@ -11,7 +12,6 @@ export default ({ config, db }) => {
 	api.use('/facets', facets({ config, db }));
 
 	api.post('/', (req, res) => {
-		console.log(req.body);
 		var options = {
 		  "method": "POST",
 		  "hostname": "sandbox.bluesnap.com",
@@ -74,8 +74,18 @@ export default ({ config, db }) => {
 		bsReq.end();
 	});
 
-	api.get('/test', (req, res) => {
-		res.send("testing...");
+	api.post('/postBatchMetaData', (req, res) => {
+		const {batchId, csvPath, res_code, res_message, res_body} = req.body;
+		const datetime = moment().format('YYYY-MM-DD HH:mm:ss');
+		const insertBatchQuery = 'INSERT INTO csv_uploads VALUES (' + batchId + ', ' + datetime + ', ' + csvPath + ', ' + res_code + ', ' + res_message + ', ' + res_body + ')';
+
+		db.query(insertBatchQuery, (err, result) => {
+			if(err){
+				res.send(err);
+			}else{
+				res.send("Successfully inserted batch meta data");
+			}
+		});
 	})
 
 	return api;
