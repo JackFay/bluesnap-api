@@ -36,15 +36,6 @@ initializeDb( db => {
 		console.log('The environment is: ' + process.env.ENV);
 	});
 
-	var cors_proxy = require('cors-anywhere');
-	cors_proxy.createServer({
-	    originWhitelist: [], // Allow all origins
-	    requireHeader: ['origin', 'x-requested-with'],
-	    removeHeaders: ['cookie', 'cookie2']
-	}).listen(8081, 'localhost', function() {
-	    console.log('Running CORS Anywhere');
-	});
-
 });
 
 export default app;
