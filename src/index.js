@@ -33,6 +33,7 @@ initializeDb( db => {
 
 	app.server.listen(process.env.PORT || config.port, () => {
 		console.log(`Started on port ${app.server.address().port}`);
+		console.log('The environment is: ' + process.env.ENV);
 	});
 
 	var cors_proxy = require('cors-anywhere');
