@@ -4,7 +4,7 @@ export default callback => {
 	var connection = mysql.createConnection({
       host: 'localhost',
       user: 'root',
-      password: 'dinero!',
+      password: 'root',
       database: 'batch_uploader',
 			port: 3306
     })

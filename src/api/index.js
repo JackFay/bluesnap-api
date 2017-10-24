@@ -4,6 +4,7 @@ import facets from './facets';
 import axios from "axios";
 import http from "https";
 import moment from "moment";
+const hostname = process.env.ENV === 'prod' ? 'ws.bluesnap.com' : 'sandbox.bluesnap.com';
 
 export default ({ config, db }) => {
 	let api = Router();
@@ -14,7 +15,7 @@ export default ({ config, db }) => {
 	api.post('/', (req, res) => {
 		var options = {
 		  "method": "POST",
-		  "hostname": "sandbox.bluesnap.com",
+		  "hostname": hostname,
 		  "port": null,
 		  "path": "/services/2/batch-transactions",
 		  "headers": {
@@ -47,7 +48,7 @@ export default ({ config, db }) => {
 		const apiKey = req.body.apiKey;
 		var options = {
 		  "method": "GET",
-		  "hostname": "sandbox.bluesnap.com",
+		  "hostname": hostname,
 		  "port": null,
 		  "path": "/services/2/batch-transactions/" + batchId,
 		  "headers": {
