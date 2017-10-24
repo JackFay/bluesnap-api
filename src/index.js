@@ -7,6 +7,7 @@ import initializeDb from './db';
 import middleware from './middleware';
 import api from './api';
 import config from './config.json';
+import path from "path";
 
 let app = express();
 app.server = http.createServer(app);
@@ -21,6 +22,10 @@ app.use(cors({
 
 app.use(bodyParser.json({limit: "50mb"}));
 app.use(bodyParser.urlencoded({limit: "50mb", extended: true, parameterLimit:50000}));
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '/dist/index.html'))
+})
 
 // connect to db
 initializeDb( db => {
