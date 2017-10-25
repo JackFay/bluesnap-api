@@ -4,7 +4,8 @@ import facets from './facets';
 import axios from "axios";
 import http from "https";
 import moment from "moment";
-const hostname = process.env.ENV === 'prod' ? 'ws.bluesnap.com' : 'sandbox.bluesnap.com';
+import config from '../config';
+const hostname = config.hostname;
 
 export default ({ config, db }) => {
 	let api = Router();
@@ -87,7 +88,66 @@ export default ({ config, db }) => {
 				res.send("Successfully inserted batch meta data");
 			}
 		});
-	})
+	});
+
+	api.post('/batchTransactionCallback', (req, res) => {
+		var xml = req.body['batch-transaction'];
+		var transactions = [];
+		var batchId = xml['batch-id'][0];
+		var batch_processing_status = xml['processing-info'][0]['processing-status'][0];
+		for(var i=0; i < xml['transaction-count']; i++){
+			var card_transaction_type = xml['card-transaction'][i]['card-transaction-type'][0];
+			var merchant_txn_id = xml['card-transaction'][i]['merchant-transaction-id'][0];
+			var transaction_id = "N/A";
+			var recurring_txn = xml['card-transaction'][i]['recurring-transaction'][0];
+			var amount = xml['card-transaction'][i]['amount'][0];
+			var currency = xml['card-transaction'][i]['currency'][0];
+			var card_holder_first_name = "N/A";
+			var card_holder_last_name = "N/A";
+			var card_last_four_digits = "N/A";
+			var card_expiration_month = "N/A";
+			var card_expiration_year = "N/A";
+			if(xml['card-transaction'][i]['card-holder-info'] !== undefined){
+				card_holder_first_name = xml['card-transaction'][i]['card-holder-info'][0]['first-name'][0];
+				card_holder_last_name = xml['card-transaction'][i]['card-holder-info'][0]['last-name'][0];
+			}
+			if(xml['card-transaction'][i]['credit-card'] !== undefined){
+				card_last_four_digits = xml['card-transaction'][i]['credit-card'][0]['card-last-four-digits'][0];
+				card_expiration_month = xml['card-transaction'][i]['credit-card'][0]['expiration-month'][0];
+				card_expiration_year = xml['card-transaction'][i]['credit-card'][0]['expiration-year'][0];
+			}
+			var processing_status = xml['card-transaction'][i]['processing-info'][0]['processing-status'][0];
+			var processing_error_code = "N/A";
+			var processing_error_desc = "N/A";
+			if(processing_status !== "SUCCESS"){
+				processing_error_desc = xml['card-transaction'][i]['processing-info'][0]['processing-errors'][0]['processing-error'][0]['processing-error-description'][0];
+				processing_error_code = xml['card-transaction'][i]['processing-info'][0]['processing-errors'][0]['processing-error'][0]['processing-error-code'][0];
+			}else{
+				transaction_id = xml['card-transaction'][i]['transaction-id'][0];
+			}
+			transactions.push([batchId, card_transaction_type, merchant_txn_id, transaction_id,
+				recurring_txn, amount, currency, card_holder_first_name, card_holder_last_name,
+				card_last_four_digits, card_expiration_month, card_expiration_year, processing_status,
+				processing_error_code, processing_error_desc, batch_processing_status
+			]);
+		}
+
+		var sql = "INSERT INTO processed_transactions (batch_id, card_transaction_type, merchant_transaction_id, \
+								transaction_id, recurring_transaction, amount, currency, card_holder_first_name, \
+							  card_holder_last_name, card_last_four_digits, card_expiration_month, card_expiration_year, \
+							  processing_status, processing_error_code, processing_error_description, batch_processing_status)\
+								VALUES ?";
+		db.query(sql, [transactions], (err, result) => {
+				if(err){
+					res.send(err);
+				}else{
+					res.send("success");
+				}
+		})
+
+		console.log(transactions);
+
+	});
 
 	return api;
 }

@@ -8,8 +8,10 @@ import middleware from './middleware';
 import api from './api';
 import config from './config.json';
 import path from "path";
+import xmlparser from 'express-xml-bodyparser';
 
 let app = express();
+app.options('*', cors())
 app.server = http.createServer(app);
 
 // logger
@@ -22,6 +24,7 @@ app.use(cors({
 
 app.use(bodyParser.json({limit: "50mb"}));
 app.use(bodyParser.urlencoded({limit: "50mb", extended: true, parameterLimit:50000}));
+app.use(xmlparser());
 
 // connect to db
 initializeDb( db => {
@@ -34,7 +37,7 @@ initializeDb( db => {
 
 	app.server.listen(process.env.PORT || config.port, () => {
 		console.log(`Started on port ${app.server.address().port}`);
-		console.log('The environment is: ' + process.env.ENV);
+		console.log('The environment is: ' + config.env);
 	});
 
 });
