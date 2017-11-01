@@ -22,10 +22,10 @@ CREATE TABLE processed_transactions (
   card_last_four_digits INT,
   card_expiration_month INT,
   card_expiration_year INT,
+  card_type VARCHAR(255),
   processing_status VARCHAR(255),
   processing_error_code VARCHAR(255),
   processing_error_description VARCHAR(255),
   batch_processing_status VARCHAR(255),
-  PRIMARY KEY (`id`),
-  FOREIGN KEY (`batch_id`) REFERENCES `csv_uploads`(`batch_id`)
+  PRIMARY KEY (`id`)
 );

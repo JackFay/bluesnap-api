@@ -21,7 +21,7 @@ export default ({ config, db }) => {
 		  "path": "/services/2/batch-transactions",
 		  "headers": {
 		    "content-type": "application/xml",
-		    "authorization": "Basic " + req.body.api,
+		    "authorization": "Basic " + config.apiKey,
 		    "cache-control": "no-cache",
 		    "postman-token": "2847266b-dca6-9920-6942-0b43934b1306"
 		  }
@@ -54,7 +54,7 @@ export default ({ config, db }) => {
 		  "path": "/services/2/batch-transactions/" + batchId,
 		  "headers": {
 		    "content-type": "application/xml",
-		    "authorization": "Basic " + apiKey,
+		    "authorization": "Basic " + config.apiKey,
 		    "cache-control": "no-cache",
 		    "postman-token": "d4b52c61-bc50-c8cc-0d02-ded9de999104"
 		  }
@@ -79,7 +79,9 @@ export default ({ config, db }) => {
 	api.post('/postBatchMetaData', (req, res) => {
 		const {batchId, csvPath, res_code, res_message, res_body} = req.body;
 		const datetime = moment().format('YYYY-MM-DD HH:mm:ss');
-		const insertBatchQuery = 'INSERT INTO csv_uploads VALUES (\'' + batchId + '\', \'' + datetime + '\', \'' + csvPath + '\', \'' + res_code + '\', \'' + res_message + '\', \'' + res_body + '\')';
+		const insertBatchQuery = 'INSERT INTO csv_uploads (batch_id, date_time, csv_path,\
+			 response_code, response_message, response_body)\
+			 VALUES (\'' + batchId + '\', \'' + datetime + '\', \'' + csvPath + '\', \'' + res_code + '\', \'' + res_message + '\', \'' + res_body + '\')';
 
 		db.query(insertBatchQuery, (err, result) => {
 			if(err){
@@ -92,6 +94,7 @@ export default ({ config, db }) => {
 
 	api.post('/batchTransactionCallback', (req, res) => {
 		var xml = req.body['batch-transaction'];
+		console.log(xml);
 		var transactions = [];
 		var batchId = xml['batch-id'][0];
 		var batch_processing_status = xml['processing-info'][0]['processing-status'][0];
@@ -104,17 +107,20 @@ export default ({ config, db }) => {
 			var currency = xml['card-transaction'][i]['currency'][0];
 			var card_holder_first_name = "N/A";
 			var card_holder_last_name = "N/A";
-			var card_last_four_digits = "N/A";
-			var card_expiration_month = "N/A";
-			var card_expiration_year = "N/A";
+			var card_last_four_digits = 0;
+			var card_expiration_month = 0;
+			var card_expiration_year = 0;
+			var card_type = "N/A";
 			if(xml['card-transaction'][i]['card-holder-info'] !== undefined){
 				card_holder_first_name = xml['card-transaction'][i]['card-holder-info'][0]['first-name'][0];
 				card_holder_last_name = xml['card-transaction'][i]['card-holder-info'][0]['last-name'][0];
 			}
 			if(xml['card-transaction'][i]['credit-card'] !== undefined){
-				card_last_four_digits = xml['card-transaction'][i]['credit-card'][0]['card-last-four-digits'][0];
-				card_expiration_month = xml['card-transaction'][i]['credit-card'][0]['expiration-month'][0];
-				card_expiration_year = xml['card-transaction'][i]['credit-card'][0]['expiration-year'][0];
+				var cardXml = xml['card-transaction'][i]['credit-card'][0];
+				card_last_four_digits = cardXml['card-last-four-digits'] === undefined ? 0 : cardXml['card-last-four-digits'][0];
+				card_expiration_month = cardXml['expiration-month'] === undefined ? 0 : cardXml['expiration-month'][0];
+				card_expiration_year = cardXml['expiration-year'] === undefined ? 0 : cardXml['expiration-year'][0];
+				card_type = cardXml['card-type'] === undefined ? "N/A" : cardXml['card-type'][0];
 			}
 			var processing_status = xml['card-transaction'][i]['processing-info'][0]['processing-status'][0];
 			var processing_error_code = "N/A";
@@ -127,14 +133,14 @@ export default ({ config, db }) => {
 			}
 			transactions.push([batchId, card_transaction_type, merchant_txn_id, transaction_id,
 				recurring_txn, amount, currency, card_holder_first_name, card_holder_last_name,
-				card_last_four_digits, card_expiration_month, card_expiration_year, processing_status,
+				card_last_four_digits, card_expiration_month, card_expiration_year, card_type, processing_status,
 				processing_error_code, processing_error_desc, batch_processing_status
 			]);
 		}
 
 		var sql = "INSERT INTO processed_transactions (batch_id, card_transaction_type, merchant_transaction_id, \
 								transaction_id, recurring_transaction, amount, currency, card_holder_first_name, \
-							  card_holder_last_name, card_last_four_digits, card_expiration_month, card_expiration_year, \
+							  card_holder_last_name, card_last_four_digits, card_expiration_month, card_expiration_year, card_type, \
 							  processing_status, processing_error_code, processing_error_description, batch_processing_status)\
 								VALUES ?";
 		db.query(sql, [transactions], (err, result) => {
