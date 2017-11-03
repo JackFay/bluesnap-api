@@ -99,12 +99,13 @@ export default ({ config, db }) => {
 		var batchId = xml['batch-id'][0];
 		var batch_processing_status = xml['processing-info'][0]['processing-status'][0];
 		for(var i=0; i < xml['transaction-count']; i++){
-			var card_transaction_type = xml['card-transaction'][i]['card-transaction-type'][0];
-			var merchant_txn_id = xml['card-transaction'][i]['merchant-transaction-id'][0];
+			var vaulted_shopper_id = xml['card-transaction'][i]['vaulted-shopper-id'] === undefined ? "N/A" : xml['card-transaction'][i]['vaulted-shopper-id'][0];
+			var card_transaction_type = xml['card-transaction'][i]['card-transaction-type'] === undefined ? "N/A" : xml['card-transaction'][i]['card-transaction-type'][0];
+			var merchant_txn_id = xml['card-transaction'][i]['merchant-transaction-id'] === undefined ? "N/A" : xml['card-transaction'][i]['merchant-transaction-id'][0];
 			var transaction_id = "N/A";
-			var recurring_txn = xml['card-transaction'][i]['recurring-transaction'][0];
-			var amount = xml['card-transaction'][i]['amount'][0];
-			var currency = xml['card-transaction'][i]['currency'][0];
+			var recurring_txn = xml['card-transaction'][i]['recurring-transaction'] === undefined ? "N/A" : xml['card-transaction'][i]['recurring-transaction'][0];
+			var amount = xml['card-transaction'][i]['amount'] === undefined ? 0 : xml['card-transaction'][i]['amount'][0];
+			var currency = xml['card-transaction'][i]['currency'] === undefined ? "N/A" : xml['card-transaction'][i]['currency'][0];
 			var card_holder_first_name = "N/A";
 			var card_holder_last_name = "N/A";
 			var card_last_four_digits = 0;
@@ -131,14 +132,14 @@ export default ({ config, db }) => {
 			}else{
 				transaction_id = xml['card-transaction'][i]['transaction-id'][0];
 			}
-			transactions.push([batchId, card_transaction_type, merchant_txn_id, transaction_id,
+			transactions.push([batchId, vaulted_shopper_id, card_transaction_type, merchant_txn_id, transaction_id,
 				recurring_txn, amount, currency, card_holder_first_name, card_holder_last_name,
 				card_last_four_digits, card_expiration_month, card_expiration_year, card_type, processing_status,
 				processing_error_code, processing_error_desc, batch_processing_status
 			]);
 		}
 
-		var sql = "INSERT INTO processed_transactions (batch_id, card_transaction_type, merchant_transaction_id, \
+		var sql = "INSERT INTO processed_transactions (batch_id, vaulted_shopper_id, card_transaction_type, merchant_transaction_id, \
 								transaction_id, recurring_transaction, amount, currency, card_holder_first_name, \
 							  card_holder_last_name, card_last_four_digits, card_expiration_month, card_expiration_year, card_type, \
 							  processing_status, processing_error_code, processing_error_description, batch_processing_status)\

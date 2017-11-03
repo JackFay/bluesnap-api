@@ -11,6 +11,7 @@ CREATE TABLE csv_uploads (
 CREATE TABLE processed_transactions (
   id INT NOT NULL AUTO_INCREMENT,
   batch_id VARCHAR(255),
+  vaulted_shopper_id VARCHAR(255),
   card_transaction_type VARCHAR(255),
   merchant_transaction_id VARCHAR(255),
   transaction_id VARCHAR(255),
